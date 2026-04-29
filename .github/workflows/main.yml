@@ -1,24 +1,15 @@
-name: Playwright Tests
+import { test, expect } from '@playwright/test';
+import path from 'path';
 
-on:
-  push:
-    branches: [ main ]
+test('invalid login', async ({ page }) => {
+  const filePath = 'file://' + path.resolve('index.html');
 
-jobs:
-  test:
-    runs-on: ubuntu-latest
+  await page.goto(filePath);
 
-    defaults:
-      run:
-        working-directory: login-automation
+  await page.fill('#username', 'admin');
+  await page.fill('#password', 'wrongpass');
 
-    steps:
-      - uses: actions/checkout@v4
+  await page.click('button');
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 18
-
-      - run: npm ci
-      - run: npx playwright install --with-deps
-      - run: npx playwright test
+  await expect(page.locator('#message')).toHaveText('Invalid username or password');
+});
